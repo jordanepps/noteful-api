@@ -3,7 +3,7 @@ const app = require('../src/app');
 
 const { makeFoldersArray } = require('./folders.fixtures');
 
-describe('Folders Enpoints', () => {
+describe('Folders Endpoints', () => {
 	let db;
 
 	before('make knex instance', () => {
