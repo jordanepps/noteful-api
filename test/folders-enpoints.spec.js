@@ -103,4 +103,39 @@ describe('Folders Endpoints', () => {
 				});
 		});
 	});
+
+	describe('DELETE /api/folders/:folder_id', () => {
+		context('given no folders', () => {
+			it('responds with 404 and error message', () => {
+				return supertest(app)
+					.delete('/api/folders/123456')
+					.expect(404)
+					.expect(404, { error: { message: `Folder doesn't exist` } });
+			});
+		});
+
+		context('given there are folders in the database', () => {
+			const testFolders = makeFoldersArray();
+
+			beforeEach('insert folders', () => {
+				return db.into('folders').insert(testFolders);
+			});
+
+			it('responds with 204 and removes the folder', () => {
+				const idToRemove = 1;
+				const expectedFolders = testFolders.filter(
+					folder => folder.id !== idToRemove
+				);
+
+				return supertest(app)
+					.delete(`/api/folders/${idToRemove}`)
+					.expect(204)
+					.then(res => {
+						supertest(app)
+							.get('/api/folders')
+							.expect(expectedFolders);
+					});
+			});
+		});
+	});
 });
