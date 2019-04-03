@@ -82,5 +82,25 @@ describe('Folders Endpoints', () => {
 					expect(res.body.folder_name).to.eql(newFolder.folder_name);
 				});
 		});
+
+		it(`responds with 400 and an error message when the 'folder_name' field is missing`, () => {
+			return supertest(app)
+				.post('/api/folders')
+				.send({ id: 1 })
+				.expect(400, {
+					error: { message: `Missing 'folder_name' in request body` }
+				});
+		});
+
+		it('removes xss attack content from response', () => {
+			const { maliciousFolder, expectedFolder } = makeMaliciousFolder();
+			return supertest(app)
+				.post('/api/folders')
+				.send(maliciousFolder)
+				.expect(201)
+				.expect(res => {
+					expect(res.body.folder_name).to.eql(expectedFolder.folder_name);
+				});
+		});
 	});
 });
