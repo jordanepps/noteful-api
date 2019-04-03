@@ -1,7 +1,7 @@
 const knex = require('knex');
 const app = require('../src/app');
 
-const { makeFoldersArray } = require('./folders.fixtures');
+const { makeFoldersArray, makeMaliciousFolder } = require('./folders.fixtures');
 
 describe('Folders Endpoints', () => {
 	let db;
@@ -45,6 +45,39 @@ describe('Folders Endpoints', () => {
 					.get('/api/folders')
 					.expect(200, testFolders);
 			});
+		});
+
+		context('given an XSS attack folder', () => {
+			const testFolders = makeFoldersArray();
+			const { maliciousFolder, expectedFolder } = makeMaliciousFolder();
+
+			beforeEach('insert malicious folder', () => {
+				return db
+					.into('folders')
+					.insert(testFolders)
+					.then(() => {
+						return db.into('folders').insert(maliciousFolder);
+					});
+			});
+
+			it('removes xss attack content', () => {
+				return supertest(app)
+					.get('/api/folders')
+					.expect(200)
+					.expect(res => {
+						expect(res.body[3].folder_name).to.eql(expectedFolder.folder_name);
+					});
+			});
+		});
+	});
+
+	describe('POST /api/folders', () => {
+		it('creates a folder, responding with 201 and the new folder', () => {
+			const newFolder = { folder_name: 'Test folder' };
+			return supertest(app)
+				.post('/api/folders')
+				.send(newFolder)
+				.expect(201);
 		});
 	});
 });
