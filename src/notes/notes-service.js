@@ -17,6 +17,12 @@ const NotesService = {
 			.first();
 	},
 
+	getByFolderId(knex, folder_id) {
+		return knex('notes')
+			.select('*')
+			.where({ folder_id });
+	},
+
 	updateNote(knex, id, newNoteFields) {
 		return knex('notes')
 			.where({ id })
