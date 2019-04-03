@@ -77,7 +77,10 @@ describe('Folders Endpoints', () => {
 			return supertest(app)
 				.post('/api/folders')
 				.send(newFolder)
-				.expect(201);
+				.expect(201)
+				.expect(res => {
+					expect(res.body.folder_name).to.eql(newFolder.folder_name);
+				});
 		});
 	});
 });
