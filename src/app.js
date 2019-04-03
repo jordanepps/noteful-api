@@ -14,7 +14,7 @@ app.use(cors());
 app.use(helmet());
 
 app.get('/', (req, res) => {
-	res.send('Hello, boilerplate!');
+	res.send('Hello, Noteful API!');
 });
 
 app.use(function errorHandler(error, req, res, next) {
