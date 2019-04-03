@@ -138,4 +138,42 @@ describe('Folders Endpoints', () => {
 			});
 		});
 	});
+
+	describe('PATCH /api/folders/:folder_id', () => {
+		context(`given no folders`, () => {
+			it(`responds with 404`, () => {
+				return supertest(app)
+					.delete('/api/folders/123456')
+					.expect(404, { error: { message: `Folder doesn't exist` } });
+			});
+		});
+
+		context('given there are folders in the database', () => {
+			const testFolders = makeFoldersArray();
+
+			beforeEach('insert folders', () => {
+				return db.into('folders').insert(testFolders);
+			});
+
+			it('responds with 204 and updates the folder', () => {
+				const idToUpdate = 1;
+				const updatedFolder = { folder_name: 'Test update folder name' };
+
+				const expectedFolder = {
+					...testFolders[idToUpdate - 1],
+					...updatedFolder
+				};
+
+				return supertest(app)
+					.patch(`/api/folders/${idToUpdate}`)
+					.send(updatedFolder)
+					.expect(204)
+					.then(res => {
+						supertest(app)
+							.get(`/api/folders/${idToUpdate}`)
+							.expect(expectedFolder);
+					});
+			});
+		});
+	});
 });
