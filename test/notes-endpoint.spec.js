@@ -124,5 +124,40 @@ describe.only('Notes Endpoints', () => {
 					expect(res.body.content).to.eql(newNote.content);
 				});
 		});
+
+		const requiredFields = ['note_name', 'content', 'folder_id', 'author_id'];
+
+		requiredFields.forEach(field => {
+			const newNote = {
+				note_name: 'Test note name',
+				content: 'test note content',
+				folder_id: 1,
+				author_id: 1
+			};
+
+			it(`responds with 400 and an error message when the '${field}' is missing`, () => {
+				delete newNote[field];
+
+				return supertest(app)
+					.post('/api/notes')
+					.send(newNote)
+					.expect(400, {
+						error: { message: `Missing '${field}' in request body` }
+					});
+			});
+		});
+
+		it('removes xss attack content from response', () => {
+			const { maliciousNote, expectedNote } = makeMaliciousNote();
+
+			return supertest(app)
+				.post('/api/notes')
+				.send(maliciousNote)
+				.expect(201)
+				.expect(res => {
+					expect(res.body.note_name).to.eql(expectedNote.note_name);
+					expect(res.body.content).to.eql(expectedNote.content);
+				});
+		});
 	});
 });
