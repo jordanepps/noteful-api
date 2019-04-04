@@ -7,4 +7,4 @@ CREATE TABLE authors (
 
 ALTER TABLE notes
     ADD COLUMN 
-        author INTEGER REFERENCES authors(id) ON DELETE SET NULL;
+        author_id INTEGER REFERENCES authors(id) ON DELETE SET NULL;
