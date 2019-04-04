@@ -94,4 +94,35 @@ describe.only('Notes Endpoints', () => {
 			});
 		});
 	});
+
+	describe('POST /api/notes', () => {
+		const testFolders = makeFoldersArray();
+		const testAuthors = makeAuthorsArray();
+
+		beforeEach('insert notes', () => {
+			return db
+				.into('folders')
+				.insert(testFolders)
+				.then(() => {
+					return db.into('authors').insert(testAuthors);
+				});
+		});
+
+		it('creates a note, responding with 201 and the new note', () => {
+			const newNote = {
+				note_name: 'Test note name',
+				content: 'Test note content',
+				folder_id: 1,
+				author_id: 1
+			};
+			return supertest(app)
+				.post('/api/notes')
+				.send(newNote)
+				.expect(201)
+				.expect(res => {
+					expect(res.body.note_name).to.eql(newNote.note_name);
+					expect(res.body.content).to.eql(newNote.content);
+				});
+		});
+	});
 });
