@@ -160,4 +160,96 @@ describe.only('Notes Endpoints', () => {
 				});
 		});
 	});
+
+	describe('DELETE /api/notes/:note_id', () => {
+		context('given no note', () => {
+			it('responds with 404 and error message', () => {
+				return supertest(app)
+					.delete('/api/notes/123456')
+					.expect(404, { error: { message: `Note doesn't exist` } });
+			});
+		});
+
+		context('given there are notes in the database', () => {
+			const testFolders = makeFoldersArray();
+			const testAuthors = makeAuthorsArray();
+			const testNotes = makeNotesArray();
+
+			beforeEach('insert notes', () => {
+				db.into('folders')
+					.insert(testFolders)
+					.then(() => {
+						db.into('authors').insert(testAuthors);
+					})
+					.then(() => {
+						db.into('notes').insert(testNotes);
+					});
+			});
+
+			it('responds with 204 and removes the folder', () => {
+				const idToRemove = 1;
+				const expectedNotes = testNotes.filter(note => note.id !== idToRemove);
+
+				return supertest(app)
+					.delete(`/api/notes/${idToRemove}`)
+					.expect(204)
+					.then(res => {
+						supertest(app)
+							.get('/api/notes')
+							.expect(expectedNotes);
+					});
+			});
+		});
+	});
+
+	describe('PATCH /api/notes/note_id', () => {
+		context('given no folders', () => {
+			it('responds with 404', () => {
+				return supertest(app)
+					.delete('/api/notes/123456')
+					.expect(404, { error: { message: `Note doesn't exist` } });
+			});
+		});
+
+		context('given there are notes in the database', () => {
+			const testFolders = makeFoldersArray();
+			const testNotes = makeNotesArray();
+			const testAuthors = makeAuthorsArray();
+
+			beforeEach('insert notes', () => {
+				return db
+					.into('folders')
+					.insert(testFolders)
+					.then(() => {
+						return db.into('authors').insert(testAuthors);
+					})
+					.then(() => {
+						return db.into('notes').insert(testNotes);
+					});
+			});
+
+			it('responds with 204 and updates the folder', () => {
+				const idToUpdate = 1;
+				const updatedNote = {
+					note_name: 'Updated note name',
+					content: 'updated note content'
+				};
+
+				const expectedNote = {
+					...testNotes[idToUpdate - 1],
+					...updatedNote
+				};
+
+				return supertest(app)
+					.patch(`/api/notes/${idToUpdate}`)
+					.send(updatedNote)
+					.expect(204)
+					.then(res => {
+						supertest(app)
+							.get(`/api/notes/${idToUpdate}`)
+							.expect(expectedNote);
+					});
+			});
+		});
+	});
 });

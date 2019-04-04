@@ -63,6 +63,32 @@ notesRouter
 	})
 	.get((req, res, next) => {
 		res.json(serializeNote(res.note));
+	})
+	.delete((req, res, next) => {
+		NotesService.deleteNote(req.app.get('db'), req.params.note_id)
+			.then(() => {
+				res.status(204).end();
+			})
+			.catch(next);
+	})
+	.patch(jsonParser, (req, res, next) => {
+		const { note_name, content, folder_id, author_id } = req.body;
+		const noteToUpdate = { note_name, content, folder_id, author_id };
+
+		const numberOfValues = Object.values(noteToUpdate).filter(Boolean).length;
+		if (numberOfValues === 0) {
+			return res.status(400).json({
+				error: {
+					message: `Request body must contain 'note_name', 'content', 'folder_id', and 'author_id'`
+				}
+			});
+		}
+
+		NotesService.updateNote(req.app.get('db'), req.params.note_id, noteToUpdate)
+			.then(numRowsAffected => {
+				res.status(204).end();
+			})
+			.catch(next);
 	});
 
 module.exports = notesRouter;

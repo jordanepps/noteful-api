@@ -109,7 +109,6 @@ describe('Folders Endpoints', () => {
 			it('responds with 404 and error message', () => {
 				return supertest(app)
 					.delete('/api/folders/123456')
-					.expect(404)
 					.expect(404, { error: { message: `Folder doesn't exist` } });
 			});
 		});
