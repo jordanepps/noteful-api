@@ -161,6 +161,41 @@ describe('Notes Endpoints', () => {
 		});
 	});
 
+	describe.skip('GET /api/notes/:note_id', () => {
+		context('given no note', () => {
+			it('responds with 404 and error message', () => {
+				return supertest(app)
+					.get('/api/notes/123456')
+					.expect(404, { error: { message: `Note doesn't exist` } });
+			});
+		});
+
+		context('given the note exists', () => {
+			const testFolders = makeFoldersArray();
+			const testNotes = makeNotesArray();
+			const testAuthors = makeAuthorsArray();
+			const expectedNote = testNotes[0];
+
+			beforeEach('insert notes', () => {
+				return db
+					.into('folders')
+					.insert(testFolders)
+					.then(() => {
+						return db.into('authors').insert(testAuthors);
+					})
+					.then(() => {
+						return db.into('notes').insert(testNotes);
+					});
+			});
+		});
+		//TODO:figure out why get by note id test fails
+		it('responds with 200 and the note', () => {
+			return supertest(app)
+				.get('/api/notes/1')
+				.expect(200, expectedNote);
+		});
+	});
+
 	describe('DELETE /api/notes/:note_id', () => {
 		context('given no note', () => {
 			it('responds with 404 and error message', () => {
@@ -176,29 +211,30 @@ describe('Notes Endpoints', () => {
 			const testNotes = makeNotesArray();
 
 			beforeEach('insert notes', () => {
-				db.into('folders')
+				return db
+					.into('folders')
 					.insert(testFolders)
 					.then(() => {
-						db.into('authors').insert(testAuthors);
+						return db.into('authors').insert(testAuthors);
 					})
 					.then(() => {
-						db.into('notes').insert(testNotes);
+						return db.into('notes').insert(testNotes);
 					});
 			});
-			//TODO:Figure out why test is failing
-			// it('responds with 204 and removes the folder', () => {
-			// 	const idToRemove = 1;
-			// 	const expectedNotes = testNotes.filter(note => note.id !== idToRemove);
 
-			// 	return supertest(app)
-			// 		.delete(`/api/notes/123456`)
-			// 		.expect(204)
-			// 		.then(res => {
-			// 			supertest(app)
-			// 				.get('/api/notes')
-			// 				.expect(expectedNotes);
-			// 		});
-			// });
+			it('responds with 204 and removes the folder', () => {
+				const idToRemove = 1;
+				const expectedNotes = testNotes.filter(note => note.id !== idToRemove);
+
+				return supertest(app)
+					.delete(`/api/notes/${idToRemove}`)
+					.expect(204)
+					.then(res => {
+						supertest(app)
+							.get('/api/notes')
+							.expect(expectedNotes);
+					});
+			});
 		});
 	});
 
