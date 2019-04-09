@@ -35,13 +35,12 @@ app.get('/', (req, res) => {
 	res.send('Hello, Noteful API!');
 });
 
-// app.use(function errorHandler(error, req, res, next) {
-// 	let response =
-// 		NODE_ENV === 'production'
-// 			? { error: { message: 'server error' } }
-// 			: { message: error.message, error };
-// 	console.log(error);
-// 	res.status(500).json(response);
-// });
+app.use(function errorHandler(error, req, res, next) {
+	let response =
+		NODE_ENV === 'production'
+			? { error: { message: 'server error' } }
+			: { message: error.message, error };
+	res.status(500).json(response);
+});
 
 module.exports = app;
